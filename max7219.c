@@ -20,13 +20,17 @@
 
 
 #define MAX7219_DATA   GP0
-#define MAX7219_LOAD   GP1
-#define MAX7219_CLOCK  GP4
+#define MAX7219_LOAD   GP5
+#define MAX7219_CLOCK  GP1
 
 
 #define DP_FLAG       (0b10000000)
-#define NUM_OF_DIGITS (8)
 
+
+enum position {
+    right,
+    left
+};
 
 
 // digit pattern for a 7-segment display. datasheet table 5
@@ -69,6 +73,35 @@ void set_register(unsigned char address, unsigned char value) {
 }
 
 
+void display(enum position pos, unsigned int number, unsigned char dp) {
+    unsigned short i;
+    unsigned int digit_value;
+    unsigned char byte_data;
+    unsigned char offset = pos * 4;
+
+    for (i = 0; i < 4; i++){
+        digit_value = number % 10;
+        number /= 10;
+        if ((digit_value == 0) && (number == 0)) {
+            byte_data = 0;
+        }
+        else {
+            byte_data = digit_pattern[digit_value];
+        }
+        if ((dp > 0) && (dp == i)) {
+            byte_data |= DP_FLAG;
+        }
+  
+        set_register(MAX7219_DIGIT_REG(offset + i), byte_data);
+    }
+}
+
+
+void displayfloat(enum position pos, float v) {
+    v *= 10;
+    display(pos, (unsigned int)v, (unsigned char)(v > 10));
+}
+
 void max7219_init() {
     MAX7219_LOAD = 0;
     MAX7219_CLOCK = 0;
@@ -77,31 +110,13 @@ void max7219_init() {
     // disable test mode. datasheet table 10
     set_register(MAX7219_DISPLAYTEST_REG, MAX7219_OFF);
     // set medium intensity. datasheet table 7
-    set_register(MAX7219_INTENSITY_REG, 0x3);
+    set_register(MAX7219_INTENSITY_REG, 0x2);
     // turn on display. datasheet table 3
     set_register(MAX7219_SHUTDOWN_REG, MAX7219_ON);
     // drive 8 digits. datasheet table 8
     set_register(MAX7219_SCANLIMIT_REG, 7);
     // no decode mode for all positions. datasheet table 4
     set_register(MAX7219_DECODE_REG, 0b00000000);
+    display(right, 0, 0);
+    display(left, 0, 0);
 }
-
-
-
-void display(unsigned int number, unsigned short dp) {
-    unsigned short i;
-    unsigned int digit_value;
-    unsigned char byte_data;
-
-    for (i = 0; i < NUM_OF_DIGITS; i++){
-      digit_value = number % 10;
-      number /= 10;
-      byte_data = digit_pattern[digit_value];
-  
-      if (dp == i) 
-          byte_data |= DP_FLAG;
-  
-      set_register(MAX7219_DIGIT_REG(i), byte_data);
-    }
-}
-
