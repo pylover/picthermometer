@@ -24,33 +24,9 @@
 #define MAX7219_CLOCK  GP1
 
 
-#define DP_FLAG       (0b10000000)
-
-
 enum position {
     right,
     left
-};
-
-
-// digit pattern for a 7-segment display. datasheet table 5
-static const unsigned char digit_pattern[10] = {
-  0b01111110,  // 0
-  0b00110000,  // 1
-  0b01101101,  // 2
-  0b01111001,  // 3
-  0b00110011,  // 4
-  0b01011011,  // 5
-  0b01011111,  // 6
-  0b01110000,  // 7
-  0b01111111,  // 8
-  0b01111011,  // 9
-//  0b01110111,  // A
-//  0b00011111,  // b
-//  0b01001110,  // C
-//  0b00111101,  // d
-//  0b01001111,  // E
-//  0b01000111   // F
 };
 
 
@@ -75,24 +51,16 @@ void set_register(unsigned char address, unsigned char value) {
 
 void display(enum position pos, unsigned int number, unsigned char dp) {
     unsigned short i;
-    unsigned int digit_value;
-    unsigned char byte_data;
+    unsigned int digitvalue;
     unsigned char offset = pos * 4;
 
     for (i = 0; i < 4; i++){
-        digit_value = number % 10;
+        digitvalue = number % 10;
         number /= 10;
-        if ((digit_value == 0) && (number == 0) && (i != 0)) {
-            byte_data = 0;
+        if (dp == i) {
+            digitvalue |= 0b10000000;
         }
-        else {
-            byte_data = digit_pattern[digit_value];
-        }
-        if ((dp > 0) && (dp == i)) {
-            byte_data |= DP_FLAG;
-        }
-  
-        set_register(MAX7219_DIGIT_REG(offset + i), byte_data);
+        set_register(MAX7219_DIGIT_REG(offset + i), digitvalue);
     }
 }
 
@@ -115,6 +83,6 @@ void max7219_init() {
     set_register(MAX7219_SHUTDOWN_REG, MAX7219_ON);
     // drive 8 digits. datasheet table 8
     set_register(MAX7219_SCANLIMIT_REG, 7);
-    // no decode mode for all positions. datasheet table 4
-    set_register(MAX7219_DECODE_REG, 0b00000000);
+    // decode mode for all positions. datasheet table 4
+    set_register(MAX7219_DECODE_REG, 0b11111111);
 }

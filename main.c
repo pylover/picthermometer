@@ -4,8 +4,8 @@
 // 'C' source line config statements
 
 // BEGIN CONFIG
-//#pragma config FOSC =  INTRCIO   // Oscillator Selection bits (RC oscillator: IO function on GP4/OSC2/CLKOUT pin, GP5/OSC1/CLKIN)
-#pragma config FOSC =  INTRCCLK   // Oscillator Selection bits (RC oscillator: CLKOUT function on GP4/OSC2/CLKOUT pin, RC on GP5/OSC1/CLKIN)
+#pragma config FOSC =  INTRCIO   // Oscillator Selection bits (RC oscillator: IO function on GP4/OSC2/CLKOUT pin, GP5/OSC1/CLKIN)
+//#pragma config FOSC =  INTRCCLK   // Oscillator Selection bits (RC oscillator: CLKOUT function on GP4/OSC2/CLKOUT pin, RC on GP5/OSC1/CLKIN)
 #pragma config WDTE =  ON        // Watchdog Timer Enable bit (WDT enabled)
 #pragma config PWRTE = ON       // Power-Up Timer Enable bit (PWRT enabled)
 #pragma config MCLRE = OFF       // GP3/MCLR pin function select (GP3/MCLR pin function is MCLR)
@@ -25,26 +25,34 @@
 static short adcvalue = 0;
 
 
+#define DUAL_SENSOR
+
+
 void interrupt isr(void) {
-    //short diff;
     short newvalue;
     if (ADIF) {
         newvalue = ADRESH << 8;
         newvalue += ADRESL;
         adcvalue = newvalue;
-        //diff = newvalue - adcvalue;
-        //if (diff < 30) {
-        //    adcvalue = newvalue;
-        //}
+        
+#ifdef DUAL_SENSOR
+        CHS0 = !CHS0;
+#endif
         ADIF = 0;
     } 
 }
 
 
 int main() {
-    TRISIO = 0b00000100;        // GP2: IN 
-    OPTION_REG = 0b11111111;
+#ifdef DUAL_SENSOR
+    TRISIO = 0b00010100;        // GP2: IN, GP4: IN
+    ANSEL = 0b01011100;         // GP4->AN3,GP2->AN2
+#else
+    TRISIO = 0b00000100;        // GP2: IN
     ANSEL = 0b01010100;         // GP2->AN2
+#endif
+
+    OPTION_REG = 0b11111111;
     CMCON = 0b00000111;
     ADCON0 = 0b10001001;        // ADON, AN2, VDD
     VRCON = 0b00000000;
@@ -55,10 +63,17 @@ int main() {
     max7219_init();
     GO_nDONE = 1;   // ADC enable
     while (1) {
+        if (GO_nDONE == 1){
+            continue;
+        }
+#ifdef DUAL_SENSOR
+        displayfloat(CHS0, adcvalue * 0.48828125);
+#else
         displayfloat(left, adcvalue * 0.48828125);
-        display(right, (unsigned int)adcvalue, 0);
+        display(right, adcvalue, 0);
+#endif
         GO_nDONE = 1;   // ADC enable
-        _delaywdt(250000);
+        _delaywdt(150000);
     }
     return 0;
 }
