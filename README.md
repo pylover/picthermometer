@@ -1,2 +1,8 @@
-# pic12f675-fancontrol
-PWM Fan control using PIC12F675
+# picthermometer
+
+```bash
+make
+make program
+```
+
+

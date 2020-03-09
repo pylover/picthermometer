@@ -29,11 +29,9 @@ static short adcvalue = 0;
 
 
 void interrupt isr(void) {
-    short newvalue;
     if (ADIF) {
-        newvalue = ADRESH << 8;
-        newvalue += ADRESL;
-        adcvalue = newvalue;
+        adcvalue = ADRESH << 8;
+        adcvalue += ADRESL;
         
 #ifdef DUAL_SENSOR
         CHS0 = !CHS0;
@@ -73,7 +71,7 @@ int main() {
         display(right, adcvalue, 0);
 #endif
         GO_nDONE = 1;   // ADC enable
-        _delaywdt(150000);
+        _delaywdt(100000);
     }
     return 0;
 }

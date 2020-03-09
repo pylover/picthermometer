@@ -56,11 +56,14 @@ void display(enum position pos, unsigned int number, unsigned char dp) {
 
     for (i = 0; i < 4; i++){
         digitvalue = number % 10;
-        number /= 10;
-        if (dp == i) {
+        if ((digitvalue == 0) && (number == 0) && (i > 0)) {
+            digitvalue |= 0b00001111;
+        }
+        else if (dp == i) {
             digitvalue |= 0b10000000;
         }
         set_register(MAX7219_DIGIT_REG(offset + i), digitvalue);
+        number /= 10;
     }
 }
 
