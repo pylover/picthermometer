@@ -22,26 +22,29 @@
 #include <xc.h>
 #include "max7219.c"
 
-
-static unsigned short adcvalue = 0;
-static float value;
+static short adcvalue = 0;
 
 
 void interrupt isr(void) {
+    //short diff;
+    short newvalue;
     if (ADIF) {
-        adcvalue = (unsigned short)(ADRESH << 8);
-        adcvalue += ADRESL;
-
+        newvalue = ADRESH << 8;
+        newvalue += ADRESL;
+        adcvalue = newvalue;
+        //diff = newvalue - adcvalue;
+        //if (diff < 30) {
+        //    adcvalue = newvalue;
+        //}
         ADIF = 0;
     } 
 }
 
 
-
 int main() {
     TRISIO = 0b00000100;        // GP2: IN 
     OPTION_REG = 0b11111111;
-    ANSEL = 0b00010100;         // GP2->AN2
+    ANSEL = 0b01010100;         // GP2->AN2
     CMCON = 0b00000111;
     ADCON0 = 0b10001001;        // ADON, AN2, VDD
     VRCON = 0b00000000;
@@ -52,13 +55,10 @@ int main() {
     max7219_init();
     GO_nDONE = 1;   // ADC enable
     while (1) {
-        if (!GO_nDONE) {
-            //value = adcvalue * 0.21484375;
-            //displayfloat(left, value);
-            display(right, adcvalue, 0);
-            GO_nDONE = 1;   // ADC enable
-        }
-        _delaywdt(200000);
+        displayfloat(left, adcvalue * 0.48828125);
+        display(right, (unsigned int)adcvalue, 0);
+        GO_nDONE = 1;   // ADC enable
+        _delaywdt(250000);
     }
     return 0;
 }

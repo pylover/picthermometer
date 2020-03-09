@@ -82,7 +82,7 @@ void display(enum position pos, unsigned int number, unsigned char dp) {
     for (i = 0; i < 4; i++){
         digit_value = number % 10;
         number /= 10;
-        if ((digit_value == 0) && (number == 0)) {
+        if ((digit_value == 0) && (number == 0) && (i != 0)) {
             byte_data = 0;
         }
         else {
@@ -117,6 +117,4 @@ void max7219_init() {
     set_register(MAX7219_SCANLIMIT_REG, 7);
     // no decode mode for all positions. datasheet table 4
     set_register(MAX7219_DECODE_REG, 0b00000000);
-    display(right, 0, 0);
-    display(left, 0, 0);
 }
