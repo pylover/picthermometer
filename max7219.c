@@ -44,21 +44,40 @@ void set_register(unsigned char address, unsigned char value) {
     MAX7219_LOAD = 1;
 }
 
+#define DONE    0b01
+#define NEG     0b10
 
-void display(enum position pos, unsigned int number, unsigned char dp) {
-    unsigned short i;
-    unsigned int digitvalue;
+
+void display(enum position pos, int number, unsigned char dp) {
+    unsigned char i;
+    unsigned char digitvalue;
     unsigned char offset = pos * 4;
+    unsigned char stat = 0b00;
+    if (number < 0) {
+        stat |= NEG;
+        number = -number;
+    }
 
     for (i = 0; i < 4; i++){
-        digitvalue = number % 10;
-        if ((digitvalue == 0) && (number == 0) && (i > 0)) {
-            digitvalue |= 0b00001111;
+        digitvalue = (unsigned char)(number % 10);
+        if ((stat & DONE) == DONE) {
+            if ((stat & NEG) == NEG) {
+                digitvalue |= 0b00001010;
+                stat &= DONE;
+            }
+            else {
+                digitvalue |= 0b00001111;
+            }
         }
-        else if (dp == i) {
+        else if ((number < 10) && (i > 0)) {
+            stat |= DONE;
+        }
+
+        if (dp == i) {
             digitvalue |= 0b10000000;
         }
-        set_register(MAX7219_DIGIT_REG(offset + i), digitvalue);
+
+        set_register((unsigned char)MAX7219_DIGIT_REG(offset + i), digitvalue);
         number /= 10;
     }
 }
@@ -66,7 +85,7 @@ void display(enum position pos, unsigned int number, unsigned char dp) {
 
 void displayfloat(enum position pos, float v) {
     v *= 10;
-    display(pos, (unsigned int)v, (unsigned char)(v > 10));
+    display(pos, (int)v, 1);
 }
 
 void max7219_init() {

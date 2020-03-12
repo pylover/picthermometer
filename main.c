@@ -19,21 +19,20 @@
 #include <xc.h>
 #include "max7219.c"
 
-static unsigned short adcvalue = 0;
+static short adcvalue = 0;
 
 
 #define DUAL_SENSOR
-#define RATIO   0.152587
-#define OFFSET  10
-#define C(x)    ((x - OFFSET) * RATIO)
+#define INTERVAL    200000
+#define RATIO       0.152587
+#define OFFSET      4
+#define C(x)        ((x - OFFSET) * RATIO)
 
 
 void interrupt isr(void) {
-    short v;
     if (ADIF) {
-        v = ADRESH << 8;
-        v += ADRESL;
-        adcvalue = (unsigned short)v;
+        adcvalue = ADRESH << 8;
+        adcvalue += ADRESL;
         
 #ifdef DUAL_SENSOR
         CHS0 = !CHS0;
@@ -73,7 +72,7 @@ int main() {
         display(right, adcvalue, 0);
 #endif
         GO_nDONE = 1;   // ADC enable
-        _delaywdt(50000);
+        _delaywdt(INTERVAL);
     }
     return 0;
 }
