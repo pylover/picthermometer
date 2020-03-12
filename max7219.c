@@ -14,10 +14,6 @@
 #define MAX7219_DISPLAYTEST_REG (0x0F)
 #define MAX7219_DIGIT_REG(pos)  ((pos) + 1)
 
-// shutdown mode (datasheet table 3)
-#define MAX7219_OFF             (0x0)
-#define MAX7219_ON              (0x1)
-
 
 #define MAX7219_DATA   GP0
 #define MAX7219_LOAD   GP5
@@ -79,11 +75,11 @@ void max7219_init() {
     MAX7219_DATA = 0;
 
     // disable test mode. datasheet table 10
-    set_register(MAX7219_DISPLAYTEST_REG, MAX7219_OFF);
+    set_register(MAX7219_DISPLAYTEST_REG, 0);
     // set medium intensity. datasheet table 7
-    set_register(MAX7219_INTENSITY_REG, 0x2);
+    set_register(MAX7219_INTENSITY_REG, 2);
     // turn on display. datasheet table 3
-    set_register(MAX7219_SHUTDOWN_REG, MAX7219_ON);
+    set_register(MAX7219_SHUTDOWN_REG, 1);
     // drive 8 digits. datasheet table 8
     set_register(MAX7219_SCANLIMIT_REG, 7);
     // decode mode for all positions. datasheet table 4
