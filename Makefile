@@ -6,6 +6,7 @@ DIST = ./out
 OSCCAL = 30 
 CCARGS = -ansi -mc90lib -O2 -fasmfile -fshort-float 
 
+# Use to prevent to override osccal
 #-mno-osccal
 
 all: main
@@ -19,12 +20,8 @@ main: main.c max7219.c
 program: main
 	$(PG) --quiet --pic-serial-port /dev/ttyUSB0 --erase --burn --force-calibration --input-hexfile $(DIST)/main.hex
 
-
-	#$(PG) --quiet --pic-serial-port /dev/ttyUSB0 --erase --burn --force-calibration --input-hexfile $(DIST)/main.hex
-	
 p:
 	$(PG) --quiet --pic-serial-port /dev/ttyUSB0 --erase --burn --force-calibration --input-hexfile OUTPUT.hex 
-
 
 read:
 	$(PG) --quiet --pic-serial-port /dev/ttyUSB0 --ihx8m --output-hexfile OUTPUT 

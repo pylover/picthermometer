@@ -20,9 +20,20 @@
 #define MAX7219_CLOCK  GP1
 
 
+#define BLANK   0b00001111
+#define DASH    0b00001010
+#define DOT     0b10000000
+
+
 enum position {
     right,
     left
+};
+
+
+typedef enum state {
+    DONE = 1,
+    NEGATIVE = 2
 };
 
 
@@ -44,9 +55,6 @@ void set_register(unsigned char address, unsigned char value) {
     MAX7219_LOAD = 1;
 }
 
-#define DONE    0b01
-#define NEG     0b10
-
 
 void display(enum position pos, int number, unsigned char dp) {
     unsigned char i;
@@ -54,19 +62,19 @@ void display(enum position pos, int number, unsigned char dp) {
     unsigned char offset = pos * 4;
     unsigned char stat = 0b00;
     if (number < 0) {
-        stat |= NEG;
+        stat |= NEGATIVE;
         number = -number;
     }
 
     for (i = 0; i < 4; i++){
         digitvalue = (unsigned char)(number % 10);
         if ((stat & DONE) == DONE) {
-            if ((stat & NEG) == NEG) {
-                digitvalue |= 0b00001010;
+            if ((stat & NEGATIVE) == NEGATIVE) {
+                digitvalue |= DASH;
                 stat &= DONE;
             }
             else {
-                digitvalue |= 0b00001111;
+                digitvalue |= BLANK;
             }
         }
         else if ((number < 10) && (i > 0)) {
@@ -74,7 +82,7 @@ void display(enum position pos, int number, unsigned char dp) {
         }
 
         if (dp == i) {
-            digitvalue |= 0b10000000;
+            digitvalue |= DOT;
         }
 
         set_register((unsigned char)MAX7219_DIGIT_REG(offset + i), digitvalue);

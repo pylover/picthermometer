@@ -25,7 +25,7 @@ static short adcvalue = 0;
 #define DUAL_SENSOR
 #define INTERVAL    200000
 #define RATIO       0.152587
-#define OFFSET      4
+#define OFFSET      0
 #define C(x)        ((x - OFFSET) * RATIO)
 
 
@@ -45,7 +45,7 @@ void interrupt isr(void) {
 int main() {
 #ifdef DUAL_SENSOR
     TRISIO = 0b00010100;        // GP2: IN, GP4: IN
-    ANSEL = 0b01011100;         // GP4->AN3,GP2->AN2
+    ANSEL = 0b01011100;         // GP4->AN3, GP2->AN2
 #else
     TRISIO = 0b00000100;        // GP2: IN
     ANSEL = 0b01010100;         // GP2->AN2
@@ -60,7 +60,7 @@ int main() {
     ADIE = 1;
     ADIF = 0;
     max7219_init();
-    GO_nDONE = 1;   // ADC enable
+    GO_nDONE = 1;               // ADC enable
     while (1) {
         if (GO_nDONE == 1){
             continue;
@@ -71,7 +71,7 @@ int main() {
         displayfloat(left, C(adcvalue));
         display(right, adcvalue, 0);
 #endif
-        GO_nDONE = 1;   // ADC enable
+        GO_nDONE = 1;           // ADC enable
         _delaywdt(INTERVAL);
     }
     return 0;
