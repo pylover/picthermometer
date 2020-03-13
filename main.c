@@ -23,10 +23,11 @@ static short adcvalue = 0;
 
 
 #define DUAL_SENSOR
-#define INTERVAL    200000
-#define RATIO       0.152587
-#define OFFSET      0
-#define C(x)        ((x - OFFSET) * RATIO)
+#define INTERVAL                200000
+#define RATIO                   0.152587
+#define OFFSET                  0
+#define C(x)                    ((x - OFFSET) * RATIO)
+#define DISPLAY_INTENSITY       4
 
 
 void interrupt isr(void) {
@@ -59,14 +60,14 @@ int main() {
 
     ADIE = 1;
     ADIF = 0;
-    max7219_init();
+    max7219_init(DISPLAY_INTENSITY);
     GO_nDONE = 1;               // ADC enable
     while (1) {
         if (GO_nDONE == 1){
             continue;
         }
 #ifdef DUAL_SENSOR
-        displayfloat(CHS0, C(adcvalue));
+        displayfloat(!CHS0, C(adcvalue));
 #else
         displayfloat(left, C(adcvalue));
         display(right, adcvalue, 0);

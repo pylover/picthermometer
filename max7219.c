@@ -20,6 +20,8 @@
 #define MAX7219_CLOCK  GP1
 
 
+
+
 #define BLANK   0b00001111
 #define DASH    0b00001010
 #define DOT     0b10000000
@@ -96,7 +98,7 @@ void displayfloat(enum position pos, float v) {
     display(pos, (int)v, 1);
 }
 
-void max7219_init() {
+void max7219_init(unsigned char intensity) {
     MAX7219_LOAD = 0;
     MAX7219_CLOCK = 0;
     MAX7219_DATA = 0;
@@ -104,7 +106,7 @@ void max7219_init() {
     // disable test mode. datasheet table 10
     set_register(MAX7219_DISPLAYTEST_REG, 0);
     // set medium intensity. datasheet table 7
-    set_register(MAX7219_INTENSITY_REG, 2);
+    set_register(MAX7219_INTENSITY_REG, intensity);
     // turn on display. datasheet table 3
     set_register(MAX7219_SHUTDOWN_REG, 1);
     // drive 8 digits. datasheet table 8
