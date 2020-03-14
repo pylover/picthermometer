@@ -23,7 +23,7 @@ static short adcvalue = 0;
 
 
 #define DUAL_SENSOR
-#define INTERVAL                200000
+#define INTERVAL                300000
 #define RATIO                   0.152587
 #define OFFSET                  0
 #define C(x)                    ((x - OFFSET) * RATIO)
@@ -42,6 +42,8 @@ void interrupt isr(void) {
     } 
 }
 
+#define TAD     0b01010000
+
 
 int main() {
 #ifdef DUAL_SENSOR
@@ -52,6 +54,7 @@ int main() {
     ANSEL = 0b01010100;         // GP2->AN2
 #endif
 
+    ANSEL |= TAD;
     OPTION_REG = 0b11111111;
     CMCON = 0b00000111;
     ADCON0 = 0b10001001;        // ADON, AN2, VDD
